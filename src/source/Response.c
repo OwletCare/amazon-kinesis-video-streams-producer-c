@@ -150,8 +150,8 @@ STATUS initializeCurlSession(PRequestInfo pRequestInfo, PCallInfo pCallInfo, CUR
     curl_easy_setopt(pCurl, CURLOPT_NOSIGNAL, 1);
 
     // Setting up limits for curl timeout
-    curl_easy_setopt(pCurl, CURLOPT_LOW_SPEED_TIME, DEFAULT_LOW_SPEED_TIME_LIMIT / HUNDREDS_OF_NANOS_IN_A_SECOND);
-    curl_easy_setopt(pCurl, CURLOPT_LOW_SPEED_LIMIT, DEFAULT_LOW_SPEED_LIMIT);
+    curl_easy_setopt(pCurl, CURLOPT_LOW_SPEED_TIME, (long)(DEFAULT_LOW_SPEED_TIME_LIMIT / HUNDREDS_OF_NANOS_IN_A_SECOND));
+    curl_easy_setopt(pCurl, CURLOPT_LOW_SPEED_LIMIT, (long)(DEFAULT_LOW_SPEED_LIMIT));
 
     // set verification for SSL connections
     CHK_STATUS(requestRequiresSecureConnection(pRequestInfo->url, &secureConnection));
@@ -182,9 +182,9 @@ STATUS initializeCurlSession(PRequestInfo pRequestInfo, PCallInfo pCallInfo, CUR
 
     // set request completion timeout in milliseconds
     if (pRequestInfo->completionTimeout != SERVICE_CALL_INFINITE_TIMEOUT) {
-        curl_easy_setopt(pCurl, CURLOPT_TIMEOUT_MS, pRequestInfo->completionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND);
+        curl_easy_setopt(pCurl, CURLOPT_TIMEOUT_MS, (long)(pRequestInfo->completionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND));
     }
-    curl_easy_setopt(pCurl, CURLOPT_CONNECTTIMEOUT_MS, pRequestInfo->connectionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND);
+    curl_easy_setopt(pCurl, CURLOPT_CONNECTTIMEOUT_MS, (long)(pRequestInfo->connectionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND));
     curl_easy_setopt(pCurl, CURLOPT_TCP_NODELAY, 1);
 
     // set header callback
@@ -274,7 +274,7 @@ VOID terminateCurlSession(PCurlResponse pCurlResponse, UINT64 timeout)
             THREAD_SLEEP(timeout);
             // unpause curl in case curl is paused
             curl_easy_pause(pCurlResponse->pCurl, CURLPAUSE_SEND_CONT);
-            curl_easy_setopt(pCurlResponse->pCurl, CURLOPT_TIMEOUT_MS, TIMEOUT_AFTER_STREAM_STOPPED);
+            curl_easy_setopt(pCurlResponse->pCurl, CURLOPT_TIMEOUT_MS, (long)TIMEOUT_AFTER_STREAM_STOPPED);
             // after timing out curl, give some time for it to take effect.
             THREAD_SLEEP(timeout);
             ATOMIC_STORE_BOOL(&pCurlResponse->terminated, TRUE);
@@ -418,7 +418,7 @@ STATUS curlCompleteSync(PCurlResponse pCurlResponse)
         pCurlResponse->callInfo.callResult = getServiceCallResultFromCurlStatus(result);
     } else {
         // get the response code and note the request completion time
-        curl_easy_getinfo(pCurlResponse->pCurl, CURLINFO_RESPONSE_CODE, &pCurlResponse->callInfo.httpStatus);
+        curl_easy_getinfo(pCurlResponse->pCurl, CURLINFO_RESPONSE_CODE, (long*)&pCurlResponse->callInfo.httpStatus);
         pCurlResponse->callInfo.callResult = getServiceCallResultFromHttpStatus(pCurlResponse->callInfo.httpStatus);
     }
 

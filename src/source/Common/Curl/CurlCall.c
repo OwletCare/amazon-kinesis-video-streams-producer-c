@@ -63,14 +63,14 @@ STATUS blockingCurlCall(PRequestInfo pRequestInfo, PCallInfo pCallInfo)
     curl_easy_setopt(curl, CURLOPT_SSLKEY, pRequestInfo->sslPrivateKeyPath);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCurlResponseCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, pCallInfo);
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, pRequestInfo->connectionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)(pRequestInfo->connectionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND));
     if (pRequestInfo->completionTimeout != SERVICE_CALL_INFINITE_TIMEOUT) {
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, pRequestInfo->completionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(pRequestInfo->completionTimeout / HUNDREDS_OF_NANOS_IN_A_MILLISECOND));
     }
 
     // Setting up limits for curl timeout
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, pRequestInfo->lowSpeedTimeLimit / HUNDREDS_OF_NANOS_IN_A_SECOND);
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, pRequestInfo->lowSpeedLimit);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, (long)(pRequestInfo->lowSpeedTimeLimit / HUNDREDS_OF_NANOS_IN_A_SECOND));
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, (long)(pRequestInfo->lowSpeedLimit));
 
     res = curl_easy_perform(curl);
 
@@ -79,7 +79,7 @@ STATUS blockingCurlCall(PRequestInfo pRequestInfo, PCallInfo pCallInfo)
         CHK_ERR(FALSE, STATUS_CURL_PERFORM_FAILED, "Curl perform failed for url %s with result %s : %s ", url, curl_easy_strerror(res), errorBuffer);
     }
 
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStatusCode);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, (long*)&httpStatusCode);
     CHK_ERR(httpStatusCode == HTTP_STATUS_CODE_OK, STATUS_CURL_PERFORM_FAILED, "Curl call response failed with http status %lu", httpStatusCode);
 
 CleanUp:
